@@ -1,53 +1,44 @@
+// backend/src/controllers/linkController.js
+
 import Link from "../models/Link.js";
 import { customAlphabet } from "nanoid";
 
 const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 8);
 
-// 1. Create a short link
+// Create
 export const createLink = async (req, res) => {
   const { originalUrl } = req.body;
   if (!originalUrl) return res.status(400).json({ error: "originalUrl is required" });
 
-  // generate unique code
-  let shortCode;
-  let exists;
+  let shortCode, exists;
   do {
     shortCode = nanoid();
     exists = await Link.findOne({ shortCode });
   } while (exists);
 
-  const link = new Link({
-    originalUrl,
-    shortCode,
-    owner: req.userId
-  });
-
+  const link = new Link({ originalUrl, shortCode, owner: req.userId });
   await link.save();
   res.status(201).json(link);
 };
 
-// 2. Get all links for this user
+// Get
 export const getLinks = async (req, res) => {
   const links = await Link.find({ owner: req.userId }).sort({ createdAt: -1 });
   res.json(links);
 };
 
-// 3. Delete a link by its ID
+// Delete
 export const deleteLink = async (req, res) => {
-  const { id } = req.params;
-  const link = await Link.findOneAndDelete({ _id: id, owner: req.userId });
+  const link = await Link.findOneAndDelete({ _id: req.params.id, owner: req.userId });
   if (!link) return res.status(404).json({ error: "Link not found" });
   res.json({ message: "Link deleted" });
 };
 
-// 4. Redirect via shortCode (public)
+// Redirect (public)
 export const redirectToUrl = async (req, res) => {
-  const { code } = req.params;
-  const link = await Link.findOne({ shortCode: code });
+  const link = await Link.findOne({ shortCode: req.params.code });
   if (!link) return res.status(404).json({ error: "Link not found" });
-
-  link.clickCount += 1;
+  link.clickCount++;
   await link.save();
-
-  return res.redirect(link.originalUrl);
+  res.redirect(link.originalUrl);
 };

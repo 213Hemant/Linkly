@@ -3,18 +3,18 @@ import {
   createLink,
   getLinks,
   deleteLink,
-  redirectToUrl
+  redirectToUrl,
 } from "../controllers/linkcontroller.js";
 import { auth } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Protected routes—require JWT
+// Authenticated routes
 router.post("/", auth, createLink);
-router.get("/",  auth, getLinks);
+router.get("/", auth, getLinks);
 router.delete("/:id", auth, deleteLink);
 
-// Public redirect route
+// Public redirect route — NO auth
 router.get("/r/:code", redirectToUrl);
 
 export default router;
