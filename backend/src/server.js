@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 
 import authRoutes from "./routes/auth.js";
+import linkRoutes from "./routes/links.js"; // 👈 added link routes import
 import { auth } from "./middleware/auth.js"; // 👈 import your auth middleware
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/links", linkRoutes); // 👈 mount links router here
 
 // Public test route
 app.get("/api/test", (req, res) => {
