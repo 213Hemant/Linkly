@@ -5,20 +5,47 @@ import { customAlphabet } from "nanoid";
 
 const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 8);
 
+
 // Create
 export const createLink = async (req, res) => {
-  const { originalUrl } = req.body;
-  if (!originalUrl) return res.status(400).json({ error: "originalUrl is required" });
+  // Grab whatever came in
+  let { originalUrl, name } = req.body;
 
-  let shortCode, exists;
-  do {
-    shortCode = nanoid();
-    exists = await Link.findOne({ shortCode });
-  } while (exists);
+  // If originalUrl itself is an object, unpack it
+  if (originalUrl && typeof originalUrl === "object") {
+    name = originalUrl.name || name;
+    originalUrl = originalUrl.originalUrl;
+  }
 
-  const link = new Link({ originalUrl, shortCode, owner: req.userId });
-  await link.save();
-  res.status(201).json(link);
+  // Validate
+  if (!originalUrl || typeof originalUrl !== "string") {
+    return res
+      .status(400)
+      .json({ error: "originalUrl must be a non-empty string" });
+  }
+
+  try {
+    // Generate unique short code
+    let shortCode;
+    let exists;
+    do {
+      shortCode = nanoid();
+      exists = await Link.findOne({ shortCode });
+    } while (exists);
+
+    // Build and save
+    const link = new Link({
+      originalUrl: originalUrl.trim(),
+      shortCode,
+      name: name?.trim(),
+      owner: req.userId,
+    });
+    await link.save();
+    return res.status(201).json(link);
+  } catch (err) {
+    console.error("CreateLink error:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
 };
 
 // Get
