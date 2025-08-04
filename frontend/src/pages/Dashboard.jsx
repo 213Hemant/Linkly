@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserLinks, createShortLink, deleteLink } from "../api";
+import Analytics from "../components/Analytics";
 
 export default function Dashboard() {
   const [links, setLinks] = useState([]);
@@ -45,6 +46,9 @@ export default function Dashboard() {
     <div className="p-4 max-w-2xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Dashboard</h1>
+
+        
+        {/* <Analytics links={links} /> */}
         <button
           onClick={handleLogout}
           className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -92,6 +96,8 @@ export default function Dashboard() {
           </li>
         ))}
       </ul>
+      Analytics section
+      <Analytics links={links} />
     </div>
   );
 }
